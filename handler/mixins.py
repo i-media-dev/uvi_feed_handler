@@ -21,18 +21,24 @@ class FileMixin:
     - _get_tree - Получает дерево XML-файла.
     """
 
-    def _get_filenames_list(self, folder_name: str) -> list[str]:
+    def _get_filenames_list(
+        self,
+        folder_name: str,
+        format: str = 'xml'
+    ) -> list[str]:
         """Защищенный метод, возвращает список названий фидов."""
         folder_path = Path(__file__).parent.parent / folder_name
         if not folder_path.exists():
             logging.error(f'Папка {folder_name} не существует')
             raise DirectoryCreationError(f'Папка {folder_name} не найдена')
         feeds_name = [
-            feed.name for feed in folder_path.glob('*.xml') if feed.is_file()
+            feed.name for feed in folder_path.glob(
+                f'*.{format}'
+            ) if feed.is_file()
         ]
         if not feeds_name:
-            logging.error('В папке нет xml-файлов')
-            raise EmptyFeedsListError('Нет скачанных xml-файлов')
+            logging.error('В папке нет файлов')
+            raise EmptyFeedsListError('Нет скачанных файлов')
         logging.debug(f'Найдены файлы: {feeds_name}')
         return feeds_name
 

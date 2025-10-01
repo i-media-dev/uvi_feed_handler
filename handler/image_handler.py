@@ -5,7 +5,13 @@ from pathlib import Path
 from PIL import Image
 import requests
 
-from handler.constants import FEEDS_FOLDER, IMAGE_FOLDER, NEW_IMAGE_FOLDER
+from handler.constants import (
+    FEEDS_FOLDER,
+    FRAME_FOLDER,
+    IMAGE_FOLDER,
+    NEW_IMAGE_FOLDER,
+    NAME_OF_FRAME
+)
 from handler.decorators import time_of_function
 from handler.feeds import FEEDS
 from handler.mixins import FileMixin
@@ -23,10 +29,12 @@ class XMLImage(FileMixin):
     def __init__(
         self,
         feeds_folder: str = FEEDS_FOLDER,
+        frame_folder: str = FRAME_FOLDER,
         image_folder: str = IMAGE_FOLDER,
         new_image_folder: str = NEW_IMAGE_FOLDER,
         feeds_list: list[str] = FEEDS
     ) -> None:
+        self.frame_folder = frame_folder
         self.feeds_folder = feeds_folder
         self.image_folder = image_folder
         self.new_image_folder = new_image_folder
@@ -85,4 +93,33 @@ class XMLImage(FileMixin):
                     self._save_image(offer_image, folder_path, image_filename)
 
     def add_frame(self):
-        pass
+        images_names_list = self._get_filenames_list(self.image_folder, 'jpeg')
+        file_path = self._make_dir(self.image_folder)
+        frame_path = self._make_dir(self.frame_folder)
+        new_file_path = self._make_dir(self.new_image_folder)
+
+        for image_name in images_names_list:
+
+            with Image.open(file_path / image_name) as image:
+                image.load()
+            width, height = image.size
+
+            with Image.open(frame_path / NAME_OF_FRAME) as frame:
+                frame_resized = frame.resize((width, height))
+            # image_clone = image.copy()
+
+            # image_clone.paste(frame_resized, (0, 0), frame_resized)
+            # image_clone.save(new_file_path / image_name)
+            margin = 50
+            new_width = width - 2 * margin
+            new_height = height - 2 * margin
+            resized_image = image.resize(
+                (new_width, new_height),
+                Image.Resampling.LANCZOS
+            )
+            final_image = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+            x_position = (width - new_width) // 2
+            y_position = (height - new_height) // 2
+            final_image.paste(resized_image, (x_position, y_position))
+            final_image.paste(frame_resized, (0, 0), frame_resized)
+            final_image.convert('RGB').save(new_file_path / image_name, 'JPEG')
