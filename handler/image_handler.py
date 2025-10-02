@@ -2,7 +2,7 @@ from io import BytesIO
 import logging
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageFilter
 import requests
 
 from handler.constants import (
@@ -78,7 +78,9 @@ class XMLImage(FileMixin):
                 offer_images = [
                     img.text for img in offer.findall(
                         'picture'
-                    ) if '3.jpg' not in img.text and 'Technical' not in img.text
+                    ) if (
+                        '1.jpg' in img.text or '2.jpg' in img.text
+                    ) and 'Technical' not in img.text
                 ]
                 if not offer_images:
                     logging.warning(f'Offer {offer_id} не имеет изображений')
@@ -102,24 +104,44 @@ class XMLImage(FileMixin):
 
             with Image.open(file_path / image_name) as image:
                 image.load()
-            width, height = image.size
-
+                image_width, image_height = image.size
             with Image.open(frame_path / NAME_OF_FRAME) as frame:
-                frame_resized = frame.resize((width, height))
-            # image_clone = image.copy()
+                frame_resized = frame.resize((image_width, image_height))
 
-            # image_clone.paste(frame_resized, (0, 0), frame_resized)
-            # image_clone.save(new_file_path / image_name)
-            margin = 50
-            new_width = width - 2 * margin
-            new_height = height - 2 * margin
-            resized_image = image.resize(
-                (new_width, new_height),
-                Image.Resampling.LANCZOS
+            canvas_margin = 20
+
+            canvas_width = image_width - 2 * canvas_margin
+            canvas_height = image_height - 2 * canvas_margin
+
+            image_margin = 200
+
+            new_image_width = image_width - 2 * image_margin
+            new_image_height = image_height - 2 * image_margin
+
+            resized_image = image.resize((new_image_width, new_image_height))
+
+            canvas = Image.new(
+                'RGB',
+                (canvas_width, canvas_height),
+                (255, 255, 255)
             )
-            final_image = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-            x_position = (width - new_width) // 2
-            y_position = (height - new_height) // 2
-            final_image.paste(resized_image, (x_position, y_position))
+
+            x_position = (canvas_width - new_image_width) // 2
+            y_position = (canvas_height - new_image_height) // 2
+            canvas.paste(resized_image, (x_position, y_position))
+
+            final_image = Image.new(
+                'RGBA',
+                (image_width, image_height),
+                (0, 0, 0, 0)
+            )
+
+            canvas_x = (image_width - canvas_width) // 2
+            canvas_y = (image_height - canvas_height) // 2
+
+            final_image.paste(canvas, (canvas_x, canvas_y))
             final_image.paste(frame_resized, (0, 0), frame_resized)
-            final_image.convert('RGB').save(new_file_path / image_name, 'JPEG')
+            final_image.save(
+                new_file_path / f'{image_name.split('.')[0]}.png',
+                'PNG'
+            )

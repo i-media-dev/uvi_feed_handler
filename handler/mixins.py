@@ -42,7 +42,7 @@ class FileMixin:
         logging.debug(f'Найдены файлы: {feeds_name}')
         return feeds_name
 
-    def _make_dir(self, folder_name: Path) -> Path:
+    def _make_dir(self, folder_name: str) -> Path:
         """Защищенный метод, создает директорию."""
         try:
             file_path = Path(__file__).parent.parent / folder_name
