@@ -1,0 +1,142 @@
+import logging
+import xml.etree.ElementTree as ET
+
+from handler.constants import (
+    FEEDS_FOLDER,
+    NEW_FEEDS_FOLDER,
+    NEW_IMAGE_FOLDER
+)
+from handler.decorators import time_of_function
+from handler.logging_config import setup_logging
+from handler.mixins import FileMixin
+
+setup_logging()
+
+
+class XMLHandler(FileMixin):
+    """
+    Класс, предоставляющий интерфейс
+    для обработки xml-файлов.
+    """
+
+    def __init__(
+        self,
+        feeds_folder: str = FEEDS_FOLDER,
+        new_feeds_folder: str = NEW_FEEDS_FOLDER,
+        new_image_folder: str = NEW_IMAGE_FOLDER
+    ) -> None:
+        self.feeds_folder = feeds_folder
+        self.new_feeds_folder = new_feeds_folder
+        self.new_image_folder = new_image_folder
+
+    # def _save_xml(self, elem, file_folder, filename) -> None:
+    #     """Защищенный метод, сохраняет отформатированные файлы."""
+    #     file_path = self._make_dir(file_folder)
+    #     tree = ET.ElementTree(elem)
+    #     tree.write(
+    #         file_path / f'new_{filename}',
+    #         encoding='utf-8',
+    #         xml_declaration=True
+    #     )
+
+    def _save_xml(self, elem, file_folder, filename) -> None:
+        """Защищенный метод, сохраняет отформатированные файлы."""
+        root = elem
+        self._indent(root)
+        formatted_xml = ET.tostring(root, encoding='unicode')
+        file_path = self._make_dir(file_folder)
+        with open(
+            file_path / f'new_{filename}',
+            'w',
+            encoding='utf-8'
+        ) as f:
+            f.write(formatted_xml)
+
+    def _delete_picture(self):
+        try:
+            image_dict = {}
+            for img_file in self._get_filenames_list(
+                self.new_image_folder,
+                'png'
+            ):
+                try:
+                    offer_id = img_file.split('_')[0]
+                    if offer_id not in image_dict:
+                        image_dict[offer_id] = []
+                    image_dict[offer_id].append(img_file)
+                except (ValueError, IndexError):
+                    continue
+
+            for file_name in self._get_filenames_list(self.feeds_folder):
+                tree = self._get_tree(file_name, self.feeds_folder)
+                root = tree.getroot()
+
+                for offer in list(root.findall('.//offer')):
+                    offer_id = offer.get('id')
+                    if not offer_id:
+                        continue
+
+                    images = list(offer.findall('picture'))
+                    for image in images:
+                        offer.remove(image)
+                    logging.info(
+                        f'В оффере с id {offer_id} '
+                        f'удалено {len(images)} изображений'
+                    )
+        except Exception as e:
+            logging.error(f'Ошибка в _delete_picture: {e}')
+            raise
+
+    @time_of_function
+    def image_replacement(self):
+        """Метод, подставляющий в фиды новые изображения."""
+        try:
+            image_dict = {}
+            for img_file in self._get_filenames_list(
+                self.new_image_folder,
+                'png'
+            ):
+                try:
+                    offer_id = img_file.split('_')[0]
+                    if offer_id not in image_dict:
+                        image_dict[offer_id] = []
+                    image_dict[offer_id].append(img_file)
+                except (ValueError, IndexError):
+                    continue
+
+            for file_name in self._get_filenames_list(self.feeds_folder):
+                tree = self._get_tree(file_name, self.feeds_folder)
+                root = tree.getroot()
+
+                for offer in list(root.findall('.//offer')):
+                    offer_id = offer.get('id')
+                    if not offer_id:
+                        continue
+
+                    images = list(offer.findall('picture'))
+                    for image in images:
+                        offer.remove(image)
+                    logging.info(
+                        f'В оффере с id {offer_id} '
+                        f'удалено {len(images)} изображений'
+                    )
+
+                for offer in list(root.findall('.//offer')):
+                    offer_id = offer.get('id')
+                    if not offer_id:
+                        continue
+
+                    if offer_id in image_dict:
+                        for img_file in image_dict[offer_id]:
+                            picture_tag = ET.SubElement(offer, 'picture')
+                            picture_tag.text = (
+                                f'domen_name.i-media/директория/{img_file}'
+                            )
+                            logging.info(
+                                f'В оффер с id {offer_id} добавлена {img_file}'
+                            )
+                self._save_xml(root, self.new_feeds_folder, file_name)
+
+        except Exception as e:
+            logging.error(f'Ошибка в image_replacement: {e}')
+            raise

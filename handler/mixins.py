@@ -53,7 +53,7 @@ class FileMixin:
             logging.error(f'Не удалось создать директорию по причине {e}')
             raise DirectoryCreationError('Ошибка создания директории.')
 
-    def _get_tree(self, file_name: str, folder_name: Path) -> ET.ElementTree:
+    def _get_tree(self, file_name: str, folder_name: str) -> ET.ElementTree:
         """Защищенный метод, создает экземпляр класса ElementTree."""
         try:
             file_path = (
@@ -64,3 +64,19 @@ class FileMixin:
         except Exception as e:
             logging.error(f'Не удалось получить дерево фида по причине {e}')
             raise GetTreeError('Ошибка получения дерева фида.')
+
+    def _indent(self, elem, level=0) -> None:
+        """Защищенный метод, расставляет правильные отступы в XML файлах."""
+        i = '\n' + level * '  '
+        if len(elem):
+            if not elem.text or not elem.text.strip():
+                elem.text = i + '  '
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+            for child in elem:
+                self._indent(child, level + 1)
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+        else:
+            if level and (not elem.tail or not elem.tail.strip()):
+                elem.tail = i

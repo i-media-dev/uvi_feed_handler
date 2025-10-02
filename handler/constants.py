@@ -15,6 +15,9 @@ FRAME_FOLDER = os.getenv('FRAME_FOLDER', 'frame')
 FEEDS_FOLDER = os.getenv('FEEDS_FOLDER', 'temp_feeds')
 """Константа стокового названия директории с фидами."""
 
+NEW_FEEDS_FOLDER = os.getenv('NEW_FEEDS_FOLDER', 'new_feeds')
+"""Константа стокового названия директории с измененными фидами."""
+
 IMAGE_FOLDER = os.getenv('IMAGE_FOLDER', 'old_images')
 """Константа стокового названия директории с изображениями."""
 
