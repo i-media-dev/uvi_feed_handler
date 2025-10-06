@@ -1,11 +1,7 @@
 import logging
 import xml.etree.ElementTree as ET
 
-from handler.constants import (
-    FEEDS_FOLDER,
-    NEW_FEEDS_FOLDER,
-    NEW_IMAGE_FOLDER
-)
+from handler.constants import FEEDS_FOLDER, NEW_FEEDS_FOLDER, NEW_IMAGE_FOLDER
 from handler.decorators import time_of_function
 from handler.logging_config import setup_logging
 from handler.mixins import FileMixin
@@ -130,7 +126,8 @@ class XMLHandler(FileMixin):
                         for img_file in image_dict[offer_id]:
                             picture_tag = ET.SubElement(offer, 'picture')
                             picture_tag.text = (
-                                f'https://domen_name.i-media/directory/{img_file}'
+                                'https://domen_name.i-media/'
+                                f'directory/{img_file}'
                             )
                             logging.info(
                                 f'В оффер с id {offer_id} добавлена {img_file}'

@@ -1,25 +1,18 @@
-from io import BytesIO
 import logging
+from io import BytesIO
 from pathlib import Path
 
-from PIL import Image
 import requests
+from PIL import Image
 
-from handler.constants import (
-    FEEDS_FOLDER,
-    FRAME_FOLDER,
-    IMAGE_FOLDER,
-    NEW_IMAGE_FOLDER,
-    NAME_OF_FRAME,
-    NUMBER_PIXELS_CANVAS,
-    NUMBER_PIXELS_IMAGE,
-    RGB_COLOR_SETTINGS,
-    RGBA_COLOR_SETTINGS
-)
+from handler.constants import (FEEDS_FOLDER, FRAME_FOLDER, IMAGE_FOLDER,
+                               NAME_OF_FRAME, NEW_IMAGE_FOLDER,
+                               NUMBER_PIXELS_CANVAS, NUMBER_PIXELS_IMAGE,
+                               RGB_COLOR_SETTINGS, RGBA_COLOR_SETTINGS)
 from handler.decorators import time_of_function
 from handler.feeds import FEEDS
-from handler.mixins import FileMixin
 from handler.logging_config import setup_logging
+from handler.mixins import FileMixin
 
 setup_logging()
 
@@ -161,6 +154,7 @@ class XMLImage(FileMixin):
         except Exception as e:
             logging.error(f'Неожиданная ошибка при получении изображений: {e}')
 
+    @time_of_function
     def add_frame(self):
         """Метод форматирует изображения и добавляет рамку."""
         images_names_list = self._get_filenames_list(self.image_folder, 'jpeg')
@@ -169,8 +163,15 @@ class XMLImage(FileMixin):
         new_file_path = self._make_dir(self.new_image_folder)
         total_framed_images = 0
         total_failed_images = 0
+        skipped_images = 0
+
+        if not self._existing_offers_set:
+            self._build_offers_set(self.image_folder, 'png')
         try:
             for image_name in images_names_list:
+                if image_name.split('_')[0] in self._existing_offers_set:
+                    skipped_images += 1
+                    continue
 
                 with Image.open(file_path / image_name) as image:
                     image.load()
@@ -213,6 +214,14 @@ class XMLImage(FileMixin):
                     'PNG'
                 )
                 total_framed_images += 1
+            logging.info(
+                '\n Количество изображений, к которым добавленка '
+                f'рамка - {total_framed_images}\n'
+                f'Количество уже обрамленных изображений - {skipped_images}\n'
+                'Количество изображений обрамленных '
+                f'неудачно - {total_failed_images}'
+
+            )
         except Exception as e:
             total_failed_images += 1
             logging.error(f'Неожиданная ошибка наложения рамки: {e}')

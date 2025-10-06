@@ -6,12 +6,6 @@ from http.client import IncompleteRead
 
 import requests
 
-from handler.exceptions import (
-    DirectoryCreationError,
-    EmptyFeedsListError,
-    GetTreeError,
-    StructureXMLError
-)
 from handler.logging_config import setup_logging
 
 setup_logging()
