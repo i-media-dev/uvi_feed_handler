@@ -4,6 +4,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+RGB_COLOR_SETTINGS = (255, 255, 255)
+"""Цвет RGB холста."""
+
+RGBA_COLOR_SETTINGS = (0, 0, 0, 0)
+"""Цвет RGBA холста."""
+
+NUMBER_PIXELS_CANVAS = 40
+"""Количество пикселей для подгонки холста."""
+
+NUMBER_PIXELS_IMAGE = 200
+"""Количество пикселей для подгонки изображения."""
+
 NAME_OF_SHOP = 'uvi'
 """Константа названия магазина."""
 

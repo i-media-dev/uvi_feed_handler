@@ -31,16 +31,16 @@ class FileMixin:
         if not folder_path.exists():
             logging.error(f'Папка {folder_name} не существует')
             raise DirectoryCreationError(f'Папка {folder_name} не найдена')
-        feeds_name = [
-            feed.name for feed in folder_path.glob(
+        files_names = [
+            file.name for file in folder_path.glob(
                 f'*.{format}'
-            ) if feed.is_file()
+            ) if file.is_file()
         ]
-        if not feeds_name:
+        if not files_names:
             logging.error('В папке нет файлов')
             raise EmptyFeedsListError('Нет скачанных файлов')
-        logging.debug(f'Найдены файлы: {feeds_name}')
-        return feeds_name
+        logging.debug(f'Найдены файлы: {files_names}')
+        return files_names
 
     def _make_dir(self, folder_name: str) -> Path:
         """Защищенный метод, создает директорию."""
