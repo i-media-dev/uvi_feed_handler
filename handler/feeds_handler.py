@@ -125,8 +125,8 @@ class XMLHandler(FileMixin):
                         for img_file in image_dict[offer_id]:
                             picture_tag = ET.SubElement(offer, 'picture')
                             picture_tag.text = (
-                                'https://domen_name.i-media/'
-                                f'directory/{img_file}'
+                                'ftp://feeds.i-media.ru/'
+                                f'projects/uvi/new_images/{img_file}'
                             )
                             input_images += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
