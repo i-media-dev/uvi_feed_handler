@@ -75,12 +75,12 @@ class XMLImage(FileMixin):
         """Защищенный метод, строит множество всех существующих офферов."""
         try:
             for file_name in self._get_filenames_list(folder, format_str):
-                offer_id = file_name.split('_')[0]
-                if offer_id:
-                    target_set.add(offer_id)
+                offer_image = file_name.split('.')[0]
+                if offer_image:
+                    target_set.add(offer_image)
 
             logging.info(
-                f'Построен кэш для {len(target_set)} офферов'
+                f'Построен кэш для {len(target_set)} файлов'
             )
         except EmptyFeedsListError:
             raise
@@ -134,10 +134,6 @@ class XMLImage(FileMixin):
                     offer_id = offer.get('id')
                     total_offers_processed += 1
 
-                    if offer_id in self._existing_image_offers:
-                        offers_skipped_existing += 1
-                        continue
-
                     offer_images = [
                         img.text for img in offer.findall(
                             'picture'
@@ -160,6 +156,11 @@ class XMLImage(FileMixin):
                             image_data,
                             image_format
                         )
+                        if image_filename.split('.')[0] in \
+                                self._existing_image_offers:
+                            offers_skipped_existing += 1
+                            continue
+
                         folder_path = self._make_dir(self.image_folder)
                         self._save_image(
                             image_data, folder_path, image_filename)
@@ -199,7 +200,7 @@ class XMLImage(FileMixin):
             )
         try:
             for image_name in images_names_list:
-                if image_name.split('_')[0] in self._existing_framed_offers:
+                if image_name.split('.')[0] in self._existing_framed_offers:
                     skipped_images += 1
                     continue
 
