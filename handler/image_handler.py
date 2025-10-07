@@ -183,13 +183,7 @@ class XMLImage(FileMixin):
         skipped_images = 0
 
         try:
-            if not self._existing_offers_set:
-                self._build_offers_set(self.new_image_folder, 'png')
-        except (DirectoryCreationError, EmptyFeedsListError):
-            logging.warning(
-                'Директория с форматированными изображениями отсутствует. '
-                'Первый запуск'
-            )
+            self._build_offers_set(self.new_image_folder, 'png')
         try:
             for image_name in images_names_list:
                 if image_name.split('_')[0] in self._existing_offers_set:
@@ -238,7 +232,7 @@ class XMLImage(FileMixin):
                 )
                 total_framed_images += 1
             logging.info(
-                '\n Количество изображений, к которым добавленка '
+                '\n Количество изображений, к которым добавлена '
                 f'рамка - {total_framed_images}\n'
                 f'Количество уже обрамленных изображений - {skipped_images}\n'
                 'Количество изображений обрамленных '
