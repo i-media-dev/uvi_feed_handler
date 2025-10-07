@@ -182,8 +182,14 @@ class XMLImage(FileMixin):
         total_failed_images = 0
         skipped_images = 0
 
-        if not self._existing_offers_set:
-            self._build_offers_set(self.image_folder, 'png')
+        try:
+            if not self._existing_offers_set:
+                self._build_offers_set(self.new_image_folder, 'png')
+        except (DirectoryCreationError, EmptyFeedsListError):
+            logging.warning(
+                'Директория с форматированными изображениями отсутствует. '
+                'Первый запуск'
+            )
         try:
             for image_name in images_names_list:
                 if image_name.split('_')[0] in self._existing_offers_set:
