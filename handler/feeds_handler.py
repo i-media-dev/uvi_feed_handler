@@ -1,7 +1,8 @@
 import logging
 import xml.etree.ElementTree as ET
 
-from handler.constants import FEEDS_FOLDER, NEW_FEEDS_FOLDER, NEW_IMAGE_FOLDER
+from handler.constants import (ADDRESS, DOMEN_FTP, FEEDS_FOLDER,
+                               NEW_FEEDS_FOLDER, NEW_IMAGE_FOLDER, PROTOCOL)
 from handler.decorators import time_of_function
 from handler.logging_config import setup_logging
 from handler.mixins import FileMixin
@@ -116,17 +117,17 @@ class XMLHandler(FileMixin):
                     if not offer_id:
                         continue
 
-                    images = list(offer.findall('picture'))
-                    for image in images:
-                        offer.remove(image)
-                        deleted_images += 1
+                    pictures = offer.findall('picture')
+                    for picture in pictures:
+                        offer.remove(picture)
+                    deleted_images += len(pictures)
 
                     if offer_id in image_dict:
                         for img_file in image_dict[offer_id]:
                             picture_tag = ET.SubElement(offer, 'picture')
                             picture_tag.text = (
-                                'ftp://feeds.i-media.ru/'
-                                f'projects/uvi/new_images/{img_file}'
+                                f'{PROTOCOL}://{DOMEN_FTP}/'
+                                f'{ADDRESS}/{img_file}'
                             )
                             input_images += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)

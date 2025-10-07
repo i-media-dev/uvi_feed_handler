@@ -4,6 +4,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+PROTOCOL = 'https'
+"""Протокол запроса."""
+
+ADDRESS = 'projects/uvi/new_images'
+"""Путь к файлу."""
+
+DOMEN_FTP = 'feeds.i-media.ru'
+"""Домен FTP-сервера."""
+
 RGB_COLOR_SETTINGS = (255, 255, 255)
 """Цвет RGB холста."""
 
