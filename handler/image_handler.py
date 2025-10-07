@@ -184,6 +184,10 @@ class XMLImage(FileMixin):
 
         try:
             self._build_offers_set(self.new_image_folder, 'png')
+        except (DirectoryCreationError, EmptyFeedsListError):
+            logging.warning(
+                'Директория с изображениями отсутствует. Первый запуск'
+            )
         try:
             for image_name in images_names_list:
                 if image_name.split('_')[0] in self._existing_offers_set:
