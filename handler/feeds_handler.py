@@ -101,6 +101,8 @@ class XMLHandler(FileMixin):
     @time_of_function
     def image_replacement(self):
         """Метод, подставляющий в фиды новые изображения."""
+        deleted_images = 0
+        input_images = 0
         try:
             image_dict = self._get_image_dict()
 
@@ -110,17 +112,14 @@ class XMLHandler(FileMixin):
 
                 offers = list(root.findall('.//offer'))
                 for offer in offers:
-                    offer_id = offer.get('id').strip()
+                    offer_id = offer.get('id')
                     if not offer_id:
                         continue
 
                     images = list(offer.findall('picture'))
                     for image in images:
                         offer.remove(image)
-                    logging.info(
-                        f'В оффере с id {offer_id} '
-                        f'удалено {len(images)} изображений'
-                    )
+                        deleted_images += 1
 
                     if offer_id in image_dict:
                         for img_file in image_dict[offer_id]:
@@ -129,10 +128,13 @@ class XMLHandler(FileMixin):
                                 'https://domen_name.i-media/'
                                 f'directory/{img_file}'
                             )
-                            logging.info(
-                                f'В оффер с id {offer_id} добавлена {img_file}'
-                            )
+                            input_images += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
+            logging.info(
+                '\n Количество удаленных изображений в '
+                f'оффере - {deleted_images}\n'
+                f'Количество добавленных изображений - {input_images}'
+            )
 
         except Exception as e:
             logging.error(f'Ошибка в image_replacement: {e}')

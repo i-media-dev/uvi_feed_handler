@@ -41,7 +41,8 @@ class XMLImage(FileMixin):
         self.feeds_list = feeds_list
         self.number_pixels_canvas = number_pixels_canvas
         self.number_pixels_image = number_pixels_image
-        self._existing_offers_set = set()
+        self._existing_image_offers = set()
+        self._existing_framed_offers = set()
 
     def _get_image_data(self, url: str) -> tuple:
         """
@@ -70,16 +71,16 @@ class XMLImage(FileMixin):
             return ''
         return f'{offer_id}_{index}.{image_format}'
 
-    def _build_offers_set(self, folder: str, format_str: str):
+    def _build_offers_set(self, folder: str, format_str: str, target_set: set):
         """Защищенный метод, строит множество всех существующих офферов."""
         try:
             for file_name in self._get_filenames_list(folder, format_str):
                 offer_id = file_name.split('_')[0]
                 if offer_id:
-                    self._existing_offers_set.add(offer_id)
+                    target_set.add(offer_id)
 
             logging.info(
-                f'Построен кэш для {len(self._existing_offers_set)} офферов'
+                f'Построен кэш для {len(target_set)} офферов'
             )
         except EmptyFeedsListError:
             raise
@@ -116,8 +117,11 @@ class XMLImage(FileMixin):
         offers_skipped_existing = 0
 
         try:
-            if not self._existing_offers_set:
-                self._build_offers_set(self.image_folder, 'jpeg')
+            self._build_offers_set(
+                self.image_folder,
+                'jpeg',
+                self._existing_image_offers
+            )
         except (DirectoryCreationError, EmptyFeedsListError):
             logging.warning(
                 'Директория с изображениями отсутствует. Первый запуск'
@@ -130,7 +134,7 @@ class XMLImage(FileMixin):
                     offer_id = offer.get('id')
                     total_offers_processed += 1
 
-                    if offer_id in self._existing_offers_set:
+                    if offer_id in self._existing_image_offers:
                         offers_skipped_existing += 1
                         continue
 
@@ -183,14 +187,19 @@ class XMLImage(FileMixin):
         skipped_images = 0
 
         try:
-            self._build_offers_set(self.new_image_folder, 'png')
+            self._build_offers_set(
+                self.new_image_folder,
+                'png',
+                self._existing_framed_offers
+            )
         except (DirectoryCreationError, EmptyFeedsListError):
             logging.warning(
-                'Директория с изображениями отсутствует. Первый запуск'
+                'Директория с форматированными изображениями отсутствует. '
+                'Первый запуск'
             )
         try:
             for image_name in images_names_list:
-                if image_name.split('_')[0] in self._existing_offers_set:
+                if image_name.split('_')[0] in self._existing_framed_offers:
                     skipped_images += 1
                     continue
 
