@@ -147,7 +147,7 @@ class XMLImage(FileMixin):
                     offers_with_images += 1
 
                     for index, offer_image in enumerate(offer_images):
-                        potential_filename = f'{offer_id}_{index}.jpeg'
+                        potential_filename = f'{offer_id}_{index}'
                         if potential_filename in self._existing_image_offers:
                             offers_skipped_existing += 1
                             continue
