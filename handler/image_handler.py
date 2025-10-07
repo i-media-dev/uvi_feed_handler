@@ -10,6 +10,7 @@ from handler.constants import (FEEDS_FOLDER, FRAME_FOLDER, IMAGE_FOLDER,
                                NUMBER_PIXELS_CANVAS, NUMBER_PIXELS_IMAGE,
                                RGB_COLOR_SETTINGS, RGBA_COLOR_SETTINGS)
 from handler.decorators import time_of_function
+from handler.exceptions import DirectoryCreationError
 from handler.feeds import FEEDS
 from handler.logging_config import setup_logging
 from handler.mixins import FileMixin
@@ -71,14 +72,23 @@ class XMLImage(FileMixin):
 
     def _build_offers_set(self, folder: str, format_str: str):
         """Защищенный метод, строит множество всех существующих офферов."""
-        for file_name in self._get_filenames_list(folder, format_str):
-            offer_id = file_name.split('_')[0]
-            if offer_id:
-                self._existing_offers_set.add(offer_id)
+        try:
+            for file_name in self._get_filenames_list(folder, format_str):
+                offer_id = file_name.split('_')[0]
+                if offer_id:
+                    self._existing_offers_set.add(offer_id)
 
-        logging.info(
-            f'Построен кэш для {len(self._existing_offers_set)} офферов'
-        )
+            logging.info(
+                f'Построен кэш для {len(self._existing_offers_set)} офферов'
+            )
+        except DirectoryCreationError:
+            raise
+        except Exception as e:
+            logging.error(
+                'Неожиданная ошибка при сборе множества '
+                f'скачанных изображений: {e}'
+            )
+            raise
 
     def _save_image(
         self,
@@ -103,8 +113,13 @@ class XMLImage(FileMixin):
         images_downloaded = 0
         offers_skipped_existing = 0
 
-        if not self._existing_offers_set:
-            self._build_offers_set(self.image_folder, 'jpeg')
+        try:
+            if not self._existing_offers_set:
+                self._build_offers_set(self.image_folder, 'jpeg')
+        except DirectoryCreationError:
+            logging.warning(
+                'Директория с изображениями отсутствует. Первый запуск'
+            )
         try:
             for file_name in self._get_filenames_list(self.feeds_folder):
                 tree = self._get_tree(file_name, self.feeds_folder)

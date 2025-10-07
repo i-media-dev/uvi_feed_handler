@@ -74,6 +74,7 @@ def time_of_function(func):
     """
     def wrapper(*args, **kwargs):
         start_time = time.time()
+        logging.info('Функция начала работу')
         result = func(*args, **kwargs)
         execution_time = round(time.time() - start_time, 3)
         logging.info(
