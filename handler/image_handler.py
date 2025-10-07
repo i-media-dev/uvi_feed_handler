@@ -10,7 +10,7 @@ from handler.constants import (FEEDS_FOLDER, FRAME_FOLDER, IMAGE_FOLDER,
                                NUMBER_PIXELS_CANVAS, NUMBER_PIXELS_IMAGE,
                                RGB_COLOR_SETTINGS, RGBA_COLOR_SETTINGS)
 from handler.decorators import time_of_function
-from handler.exceptions import DirectoryCreationError
+from handler.exceptions import DirectoryCreationError, EmptyFeedsListError
 from handler.feeds import FEEDS
 from handler.logging_config import setup_logging
 from handler.mixins import FileMixin
@@ -81,6 +81,8 @@ class XMLImage(FileMixin):
             logging.info(
                 f'Построен кэш для {len(self._existing_offers_set)} офферов'
             )
+        except EmptyFeedsListError:
+            raise
         except DirectoryCreationError:
             raise
         except Exception as e:
@@ -116,7 +118,7 @@ class XMLImage(FileMixin):
         try:
             if not self._existing_offers_set:
                 self._build_offers_set(self.image_folder, 'jpeg')
-        except DirectoryCreationError:
+        except (DirectoryCreationError, EmptyFeedsListError):
             logging.warning(
                 'Директория с изображениями отсутствует. Первый запуск'
             )
