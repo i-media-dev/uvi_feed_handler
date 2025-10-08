@@ -127,7 +127,8 @@ class XMLImage(FileMixin):
                 'Директория с изображениями отсутствует. Первый запуск'
             )
         try:
-            for file_name in self._get_filenames_list(self.feeds_folder):
+            file_name_list = self._get_filenames_list(self.feeds_folder)
+            for file_name in file_name_list:
                 tree = self._get_tree(file_name, self.feeds_folder)
                 root = tree.getroot()
                 for offer in root.findall('.//offer'):
@@ -166,7 +167,8 @@ class XMLImage(FileMixin):
                             image_data, folder_path, image_filename)
                         images_downloaded += 1
             logging.info(
-                f'\nВсего обработано офферов - {total_offers_processed}\n'
+                f'\n Всего обработано фидов - {len(file_name_list)}\n'
+                f'Всего обработано офферов - {total_offers_processed}\n'
                 'Всего офферов с подходящими '
                 f'изображениями - {offers_with_images}\n'
                 f'Всего изображений скачано {images_downloaded}\n'
