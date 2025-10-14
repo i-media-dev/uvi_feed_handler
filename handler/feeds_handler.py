@@ -44,7 +44,6 @@ class XMLHandler(FileMixin):
             image_dict = {}
             for img_file in self._get_filenames_list(
                 self.new_image_folder,
-                'png'
             ):
                 try:
                     offer_id = img_file.split('_')[0]
@@ -78,7 +77,6 @@ class XMLHandler(FileMixin):
         image_dict = {}
         for img_file in self._get_filenames_list(
             self.new_image_folder,
-            'png'
         ):
             try:
                 offer_id = img_file.split('_')[0]

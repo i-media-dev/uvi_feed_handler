@@ -13,25 +13,19 @@ class FileMixin:
     """
     Миксин для работы с файловой системой и XML.
     Содержиит универсальные методы:
-    - _get_filenames_list - Получение имен для XML-файлов списком.
+    - _get_filenames_list - Получение имен для файлов списком.
     - _make_dir - Создает директорию и возвращает путь до нее.
     - _get_tree - Получает дерево XML-файла.
     """
 
-    def _get_filenames_list(
-        self,
-        folder_name: str,
-        format: str = 'xml'
-    ) -> list[str]:
+    def _get_filenames_list(self, folder_name: str) -> list[str]:
         """Защищенный метод, возвращает список названий фидов."""
         folder_path = Path(__file__).parent.parent / folder_name
         if not folder_path.exists():
             logging.error(f'Папка {folder_name} не существует')
             raise DirectoryCreationError(f'Папка {folder_name} не найдена')
         files_names = [
-            file.name for file in folder_path.glob(
-                f'*.{format}'
-            ) if file.is_file()
+            file.name for file in folder_path.iterdir() if file.is_file()
         ]
         if not files_names:
             logging.error('В папке нет файлов')
