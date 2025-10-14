@@ -41,9 +41,7 @@ class XMLHandler(FileMixin):
 
     def _get_image_dict(self):
         image_dict = {}
-        for img_file in self._get_filenames_list(
-            self.new_image_folder,
-        ):
+        for img_file in self._get_filenames_list(self.new_image_folder):
             try:
                 offer_id = img_file.split('_')[0]
                 if offer_id not in image_dict:

@@ -180,7 +180,7 @@ class XMLImage(FileMixin):
     @time_of_function
     def add_frame(self):
         """Метод форматирует изображения и добавляет рамку."""
-        images_names_list = self._get_filenames_list(self.image_folder)
+        images_names_list = self._get_filenames_list(self.new_image_folder)
         file_path = self._make_dir(self.image_folder)
         frame_path = self._make_dir(self.frame_folder)
         new_file_path = self._make_dir(self.new_image_folder)
