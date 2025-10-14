@@ -183,7 +183,7 @@ class XMLImage(FileMixin):
         file_path = self._make_dir(self.image_folder)
         frame_path = self._make_dir(self.frame_folder)
         new_file_path = self._make_dir(self.new_image_folder)
-        images_names_list = self._get_filenames_list(self.new_image_folder)
+        images_names_list = self._get_filenames_list(self.image_folder)
         total_framed_images = 0
         total_failed_images = 0
         skipped_images = 0
