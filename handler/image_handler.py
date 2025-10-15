@@ -74,7 +74,8 @@ class XMLImage(FileMixin):
     def _build_offers_set(self, folder: str, target_set: set):
         """Защищенный метод, строит множество всех существующих офферов."""
         try:
-            for file_name in self._get_filenames_list(folder):
+            file_name_list = self._get_filenames_list(folder)
+            for file_name in file_name_list:
                 offer_image = file_name.split('.')[0]
                 if offer_image:
                     target_set.add(offer_image)
@@ -130,7 +131,13 @@ class XMLImage(FileMixin):
             for file_name in file_name_list:
                 tree = self._get_tree(file_name, self.feeds_folder)
                 root = tree.getroot()
-                for offer in root.findall('.//offer'):
+                offers = root.findall('.//offer')
+
+                if not offers:
+                    logging.debug(f'В файле {file_name} не найдено offers')
+                    continue
+
+                for offer in offers:
                     offer_id = offer.get('id')
                     total_offers_processed += 1
 
