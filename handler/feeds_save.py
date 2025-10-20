@@ -24,7 +24,7 @@ class XMLSaver(FileMixin):
 
     def __init__(
         self,
-        feeds_list: list[str] = FEEDS,
+        feeds_list: tuple[str, ...] = FEEDS,
         feeds_folder: str = FEEDS_FOLDER
     ) -> None:
         if not feeds_list:
@@ -44,8 +44,8 @@ class XMLSaver(FileMixin):
                 response.content
                 return response
 
-        except requests.RequestException as e:
-            logging.error(f'Ошибка при загрузке {feed}: {e}')
+        except requests.RequestException as error:
+            logging.error('Ошибка при загрузке %s: %s', feed, error)
             return None
 
     def _get_filename(self, feed: str) -> str:
@@ -83,7 +83,7 @@ class XMLSaver(FileMixin):
             file_path = folder_path / file_name
             response = self._get_file(feed)
             if response is None:
-                logging.warning(f'XML-файл {file_name} не получен.')
+                logging.warning('XML-файл %s не получен.', file_name)
                 continue
             try:
                 xml_content = response.content
@@ -94,13 +94,19 @@ class XMLSaver(FileMixin):
                 with open(file_path, 'wb') as file:
                     tree.write(file, encoding=ENCODING, xml_declaration=True)
                 saved_files += 1
-                logging.info(f'Файл {file_name} успешно сохранен')
-            except (EmptyXMLError, InvalidXMLError) as e:
-                logging.error(f'Ошибка валидации XML {file_name}: {e}')
+                logging.info('Файл %s успешно сохранен', file_name)
+            except (EmptyXMLError, InvalidXMLError) as error:
+                logging.error('Ошибка валидации XML %s: %s', file_name, error)
                 continue
-            except Exception as e:
-                logging.error(f'Ошибка обработки файла {file_name}: {e}')
+            except Exception as error:
+                logging.error(
+                    'Ошибка обработки файла %s: %s',
+                    file_name,
+                    error
+                )
                 continue
         logging.info(
-            f'Успешно записано {saved_files} файлов из {total_files}.'
+            'Успешно записано %s файлов из %s.',
+            saved_files,
+            total_files
         )

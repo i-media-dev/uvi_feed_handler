@@ -50,14 +50,16 @@ class XMLHandler(FileMixin):
                 image_dict[offer_id].append(img_file)
             except (ValueError, IndexError):
                 logging.warning(
-                    'Не удалось присвоить изображение '
-                    f'{img_file} ключу {offer_id}'
+                    'Не удалось присвоить изображение %s ключу %s',
+                    img_file,
+                    offer_id
                 )
                 continue
-            except Exception as e:
+            except Exception as error:
                 logging.error(
                     'Неожиданная ошибка во время '
-                    f'сборки словаря image_dict: {e}'
+                    'сборки словаря image_dict: %s',
+                    error
                 )
                 raise
         return image_dict
@@ -96,11 +98,12 @@ class XMLHandler(FileMixin):
                             input_images += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
             logging.info(
-                '\n Количество удаленных изображений в '
-                f'оффере - {deleted_images}\n'
-                f'Количество добавленных изображений - {input_images}'
+                '\nКоличество удаленных изображений в оффере - %s'
+                '\nКоличество добавленных изображений - %s',
+                deleted_images,
+                input_images
             )
 
-        except Exception as e:
-            logging.error(f'Ошибка в image_replacement: {e}')
+        except Exception as error:
+            logging.error('Ошибка в image_replacement: %s', error)
             raise
