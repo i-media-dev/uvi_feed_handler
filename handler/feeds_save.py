@@ -110,7 +110,7 @@ class XMLSaver(FileMixin):
                     file_name,
                     error
                 )
-                continue
+                raise
         logging.info(
             'Успешно записано %s файлов из %s.',
             saved_files,
