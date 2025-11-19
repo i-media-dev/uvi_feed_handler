@@ -3,6 +3,7 @@ from io import BytesIO
 from pathlib import Path
 
 import requests
+from rembg import remove
 from PIL import Image
 
 from handler.constants import (FEEDS_FOLDER, FRAME_FOLDER, IMAGE_FOLDER,
@@ -41,8 +42,8 @@ class XMLImage(FileMixin):
         self.feeds_list = feeds_list
         self.number_pixels_canvas = number_pixels_canvas
         self.number_pixels_image = number_pixels_image
-        self._existing_image_offers = set()
-        self._existing_framed_offers = set()
+        self._existing_image_offers: set[str] = set()
+        self._existing_framed_offers: set[str] = set()
 
     def _get_image_data(self, url: str) -> tuple:
         """
@@ -215,6 +216,11 @@ class XMLImage(FileMixin):
                 'Первый запуск'
             )
         try:
+            frame = Image.open(frame_path / NAME_OF_FRAME)
+        except Exception as error:
+            logging.error('Не удалось загрузить рамку: %s', error)
+            return
+        try:
             for image_name in images_names_list:
                 if image_name.split('.')[0] in self._existing_framed_offers:
                     skipped_images += 1
@@ -232,8 +238,7 @@ class XMLImage(FileMixin):
                     )
                     continue
 
-                with Image.open(frame_path / NAME_OF_FRAME) as frame:
-                    frame_resized = frame.resize((image_width, image_height))
+                frame_resized = frame.resize((image_width, image_height))
 
                 canvas_width = image_width - self.number_pixels_canvas
                 canvas_height = image_height - self.number_pixels_canvas
