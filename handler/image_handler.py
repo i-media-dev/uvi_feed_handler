@@ -3,7 +3,6 @@ from io import BytesIO
 from pathlib import Path
 
 import requests
-from rembg import remove
 from PIL import Image
 
 from handler.constants import (FEEDS_FOLDER, FRAME_FOLDER, IMAGE_FOLDER,
