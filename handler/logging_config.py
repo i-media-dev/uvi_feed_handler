@@ -3,7 +3,6 @@ import os
 from datetime import datetime as dt
 from logging.handlers import RotatingFileHandler
 
-
 INFO_BOT = 25
 
 logging.addLevelName(INFO_BOT, 'INFO_BOT')
