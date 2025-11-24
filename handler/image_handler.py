@@ -16,6 +16,7 @@ from handler.logging_config import setup_logging
 from handler.mixins import FileMixin
 
 setup_logging()
+logger = logging.getLogger(__name__)
 
 
 class XMLImage(FileMixin):
@@ -175,7 +176,7 @@ class XMLImage(FileMixin):
                         self._save_image(
                             image_data, folder_path, image_filename)
                         images_downloaded += 1
-            logging.info(
+            logger.bot_event(
                 '\nВсего обработано фидов - %s'
                 '\nВсего обработано офферов - %s'
                 '\nВсего офферов с подходящими изображениями - %s'
@@ -274,7 +275,7 @@ class XMLImage(FileMixin):
                     'PNG'
                 )
                 total_framed_images += 1
-            logging.info(
+            logger.bot_event(
                 '\nКоличество изображений, к которым добавлена рамка - %s'
                 '\nКоличество уже обрамленных изображений - %s'
                 '\nКоличество изображений обрамленных неудачно - %s',
