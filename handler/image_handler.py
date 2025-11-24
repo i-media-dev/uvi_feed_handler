@@ -177,15 +177,23 @@ class XMLImage(FileMixin):
                             image_data, folder_path, image_filename)
                         images_downloaded += 1
             logger.bot_event(
-                '\nВсего обработано фидов - %s'
-                '\nВсего обработано офферов - %s'
-                '\nВсего офферов с подходящими изображениями - %s'
-                '\nВсего изображений скачано %s'
-                '\nПропущено офферов с уже скачанными изображениями - %s',
-                len(file_name_list),
-                total_offers_processed,
-                offers_with_images,
-                images_downloaded,
+                'Всего обработано фидов - %s',
+                len(file_name_list)
+            )
+            logger.bot_event(
+                'Всего обработано офферов - %s',
+                total_offers_processed
+            )
+            logger.bot_event(
+                'Всего офферов с подходящими изображениями - %s',
+                offers_with_images
+            )
+            logger.bot_event(
+                'Всего изображений скачано %s',
+                images_downloaded
+            )
+            logger.bot_event(
+                'Пропущено офферов с уже скачанными изображениями - %s',
                 offers_skipped_existing
             )
         except Exception as error:
@@ -276,11 +284,15 @@ class XMLImage(FileMixin):
                 )
                 total_framed_images += 1
             logger.bot_event(
-                '\nКоличество изображений, к которым добавлена рамка - %s'
-                '\nКоличество уже обрамленных изображений - %s'
-                '\nКоличество изображений обрамленных неудачно - %s',
-                total_framed_images,
-                skipped_images,
+                'Количество изображений, к которым добавлена рамка - %s',
+                total_framed_images
+            )
+            logger.bot_event(
+                'Количество уже обрамленных изображений - %s',
+                skipped_images
+            )
+            logger.bot_event(
+                'Количество изображений обрамленных неудачно - %s',
                 total_failed_images
             )
         except Exception as error:

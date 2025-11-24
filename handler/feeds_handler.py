@@ -98,9 +98,11 @@ class XMLHandler(FileMixin):
                         input_images += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
             logger.bot_event(
-                '\nКоличество удаленных изображений - %s'
-                '\nКоличество добавленных изображений - %s',
-                deleted_images,
+                'Количество удаленных изображений - %s',
+                deleted_images
+            )
+            logger.bot_event(
+                'Количество добавленных изображений - %s',
                 input_images
             )
 
