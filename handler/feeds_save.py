@@ -49,11 +49,13 @@ class XMLSaver(FileMixin):
                     response.status_code,
                     feed
                 )
-                return None
+                raise requests.exceptions.HTTPError(
+                    f'HTTP {response.status_code} для {feed}'
+                )
 
         except requests.RequestException as error:
             logging.error('Ошибка при загрузке %s: %s', feed, error)
-            return None
+            raise
 
     def _get_filename(self, feed: str) -> str:
         """Защищенный метод, формирующий имя xml-файлу."""
@@ -88,11 +90,8 @@ class XMLSaver(FileMixin):
         for feed in self.feeds_list:
             file_name = self._get_filename(feed)
             file_path = folder_path / file_name
-            response = self._get_file(feed)
-            if response is None:
-                logging.warning('XML-файл %s не получен.', file_name)
-                continue
             try:
+                response = self._get_file(feed)
                 xml_content = response.content
                 decoded_content = self._validate_xml(xml_content)
                 xml_tree = ET.fromstring(decoded_content)
@@ -102,6 +101,9 @@ class XMLSaver(FileMixin):
                     tree.write(file, encoding=ENCODING, xml_declaration=True)
                 saved_files += 1
                 logging.info('Файл %s успешно сохранен', file_name)
+            except requests.exceptions.RequestException as error:
+                logging.warning('Фид %s не получен: %s', file_name, error)
+                continue
             except (EmptyXMLError, InvalidXMLError) as error:
                 logging.error('Ошибка валидации XML %s: %s', file_name, error)
                 continue

@@ -4,6 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+ATTEMPTION_LOAD_FEED = 3
+"""Попытки для скачивания фида."""
+
+DELAY_FOR_RETRY = (5, 15, 30)
+"""Задержки перед переподключением."""
+
 DATE_FORMAT = '%Y-%m-%d'
 """Формат даты по умолчанию."""
 
