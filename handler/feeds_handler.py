@@ -90,13 +90,13 @@ class XMLHandler(FileMixin):
                     deleted_images += len(pictures)
 
                     if offer_id in image_dict:
-                        for filename in image_dict[offer_id]
-                        picture_tag = ET.SubElement(offer, 'picture')
-                        picture_tag.text = (
-                            f'{PROTOCOL}://{DOMEN_FTP}/'
-                            f'{ADDRESS}/{filename}'
-                        )
-                        input_images += 1
+                        for filename in image_dict[offer_id]:
+                            picture_tag = ET.SubElement(offer, 'picture')
+                            picture_tag.text = (
+                                f'{PROTOCOL}://{DOMEN_FTP}/'
+                                f'{ADDRESS}/{filename}'
+                            )
+                            input_images += 1
                 self._save_xml(root, self.new_feeds_folder, file_name)
             logger.bot_event(
                 'Количество удаленных изображений - %s',
