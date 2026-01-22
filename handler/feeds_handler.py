@@ -44,7 +44,7 @@ class FeedHandler(FileMixin):
         deleted_images = 0
         input_images = 0
         try:
-            image_dict = self._get_files_dict(self.new_image_folder)
+            image_dict = self._get_image_dict(self.new_image_folder)
             offers = self.root.findall('.//offer')
 
             for offer in offers:

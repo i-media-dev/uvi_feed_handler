@@ -18,6 +18,31 @@ class FileMixin:
     - _get_tree - Получает дерево XML-файла.
     """
 
+    def _get_image_dict(self, folder_name: str):
+        image_dict: dict = {}
+        filenames = self._get_files_list(folder_name)
+        for img_file in filenames:
+            try:
+                offer_id = img_file.split('_')[0]
+                if offer_id not in image_dict:
+                    image_dict[offer_id] = []
+                image_dict[offer_id].append(img_file)
+            except (ValueError, IndexError):
+                logging.warning(
+                    'Не удалось присвоить изображение %s ключу %s',
+                    img_file,
+                    offer_id
+                )
+                continue
+            except Exception as error:
+                logging.error(
+                    'Неожиданная ошибка во время '
+                    'сборки словаря image_dict: %s',
+                    error
+                )
+                raise
+        return image_dict
+
     def _save_xml(self, elem, file_folder, filename) -> None:
         """Защищенный метод, сохраняет отформатированные файлы."""
         root = elem
@@ -71,7 +96,7 @@ class FileMixin:
             logging.error(f'Папка {folder_name} не существует')
             raise DirectoryCreationError(f'Папка {folder_name} не найдена')
         files_dict = {
-            file.name.split('_')[0]: file.name for file
+            file.name.split('.')[0]: file.name for file
             in folder_path.iterdir() if file.is_file()
         }
         if not files_dict:
