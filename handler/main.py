@@ -1,10 +1,12 @@
 import logging
 
+from handler.constants import FEEDS_FOLDER, IMAGE_FOLDER
 from handler.decorators import time_of_function, time_of_script
-from handler.feeds_handler import XMLHandler
-from handler.feeds_save import XMLSaver
-from handler.image_handler import XMLImage
+from handler.feeds_handler import FeedHandler
+from handler.feeds_save import FeedSaver
+from handler.image_handler import FeedImage
 from handler.logging_config import setup_logging
+from handler.utils import get_filenames_list
 
 setup_logging()
 
@@ -13,14 +15,34 @@ setup_logging()
 @time_of_function
 def main():
     try:
-        save_client = XMLSaver()
-        image_client = XMLImage()
-        handler_client = XMLHandler()
-
+        save_client = FeedSaver()
         save_client.save_xml()
+
+        filenames = get_filenames_list(FEEDS_FOLDER)
+
+        if not filenames:
+            logging.error('Директория %s пуста', FEEDS_FOLDER)
+            raise FileNotFoundError(
+                f'Директория {FEEDS_FOLDER} не содержит файлов'
+            )
+
+        image_client = FeedImage(filenames, images=[])
         image_client.get_images()
+        images = get_filenames_list(IMAGE_FOLDER)
+
+        if not images:
+            logging.error('Директория %s пуста', IMAGE_FOLDER)
+            raise FileNotFoundError(
+                f'Директория {IMAGE_FOLDER} не содержит файлов'
+            )
+
+        image_client.images = images
         image_client.add_frame()
-        handler_client.image_replacement()
+
+        for filename in filenames:
+            handler_client = FeedHandler(filename)
+            handler_client.replace_images().save()
+
     except Exception as error:
         logging.error('Неожиданная ошибка: %s', error)
         raise

@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+ADDRESS_FTP_IMAGES = 'https://feeds.i-media.ru/projects/uvi/new_images'
+"""Адрес директории на ftp для изображений."""
+
 ATTEMPTION_LOAD_FEED = 3
 """Попытки для скачивания фида."""
 

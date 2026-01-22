@@ -1,8 +1,8 @@
 import logging
 import xml.etree.ElementTree as ET
 
-from handler.constants import (ADDRESS, DOMEN_FTP, FEEDS_FOLDER,
-                               NEW_FEEDS_FOLDER, NEW_IMAGE_FOLDER, PROTOCOL)
+from handler.constants import (ADDRESS_FTP_IMAGES, FEEDS_FOLDER,
+                               NEW_FEEDS_FOLDER, NEW_IMAGE_FOLDER)
 from handler.decorators import time_of_function
 from handler.logging_config import setup_logging
 from handler.mixins import FileMixin
@@ -11,7 +11,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-class XMLHandler(FileMixin):
+class FeedHandler(FileMixin):
     """
     Класс, предоставляющий интерфейс
     для обработки xml-файлов.
@@ -19,94 +19,86 @@ class XMLHandler(FileMixin):
 
     def __init__(
         self,
+        filename,
         feeds_folder: str = FEEDS_FOLDER,
         new_feeds_folder: str = NEW_FEEDS_FOLDER,
         new_image_folder: str = NEW_IMAGE_FOLDER
     ) -> None:
+        self.filename = filename
         self.feeds_folder = feeds_folder
         self.new_feeds_folder = new_feeds_folder
         self.new_image_folder = new_image_folder
+        self._root = None
+        self._is_modified = False
 
-    def _save_xml(self, elem, file_folder, filename) -> None:
-        """Защищенный метод, сохраняет отформатированные файлы."""
-        root = elem
-        self._indent(root)
-        formatted_xml = ET.tostring(root, encoding='unicode')
-        file_path = self._make_dir(file_folder)
-        with open(
-            file_path / f'new_{filename}',
-            'w',
-            encoding='utf-8'
-        ) as f:
-            f.write(formatted_xml)
-
-    def _get_image_dict(self):
-        image_dict = {}
-        filenames_list = self._get_filenames_list(self.new_image_folder)
-        for img_file in filenames_list:
-            try:
-                offer_id = img_file.split('_')[0]
-                if offer_id not in image_dict:
-                    image_dict[offer_id] = []
-                image_dict[offer_id].append(img_file)
-            except (ValueError, IndexError):
-                logging.warning(
-                    'Не удалось присвоить изображение %s ключу %s',
-                    img_file,
-                    offer_id
-                )
-                continue
-            except Exception as error:
-                logging.error(
-                    'Неожиданная ошибка во время '
-                    'сборки словаря image_dict: %s',
-                    error
-                )
-                raise
-        return image_dict
+    @property
+    def root(self):
+        """Ленивая загрузка корневого элемента."""
+        if self._root is None:
+            self._root = self._get_root(self.filename, self.feeds_folder)
+        return self._root
 
     @time_of_function
-    def image_replacement(self):
+    def replace_images(self):
         """Метод, подставляющий в фиды новые изображения."""
         deleted_images = 0
         input_images = 0
         try:
-            image_dict = self._get_image_dict()
-            filenames_list = self._get_filenames_list(self.feeds_folder)
+            image_dict = self._get_files_dict(self.new_image_folder)
+            offers = self.root.findall('.//offer')
 
-            for file_name in filenames_list:
-                tree = self._get_tree(file_name, self.feeds_folder)
-                root = tree.getroot()
+            for offer in offers:
+                offer_id = offer.get('id')
+                if not offer_id:
+                    continue
 
-                offers = list(root.findall('.//offer'))
-                for offer in offers:
-                    offer_id = offer.get('id')
-                    if not offer_id:
-                        continue
+                pictures = offer.findall('picture')
+                for picture in pictures:
+                    offer.remove(picture)
+                deleted_images += len(pictures)
 
-                    pictures = offer.findall('picture')
-                    for picture in pictures:
-                        offer.remove(picture)
-                    deleted_images += len(pictures)
-
-                    if offer_id in image_dict:
-                        for filename in image_dict[offer_id]:
-                            picture_tag = ET.SubElement(offer, 'picture')
-                            picture_tag.text = (
-                                f'{PROTOCOL}://{DOMEN_FTP}/'
-                                f'{ADDRESS}/{filename}'
-                            )
-                            input_images += 1
-                self._save_xml(root, self.new_feeds_folder, file_name)
+                if offer_id in image_dict:
+                    for filename in image_dict[offer_id]:
+                        picture_tag = ET.SubElement(offer, 'picture')
+                        picture_tag.text = (
+                            f'{ADDRESS_FTP_IMAGES}/{filename}'
+                        )
+                        input_images += 1
+                        self._is_modified = True
             logger.bot_event(
-                'Количество удаленных изображений - %s',
+                'Количество удаленных изображений в файле %s - %s',
+                self.filename,
                 deleted_images
             )
             logger.bot_event(
-                'Количество добавленных изображений - %s',
+                'Количество добавленных изображений в файле %s - %s',
+                self.filename,
                 input_images
             )
-
+            return self
         except Exception as error:
             logging.error('Ошибка в image_replacement: %s', error)
+            raise
+
+    def save(self, prefix: str = 'new'):
+        """Метод сохраняет файл, если были изменения."""
+        try:
+            new_filename = f'{prefix}_{self.filename}'
+
+            if not self._is_modified:
+                self._save_xml(self.root, self.new_feeds_folder, new_filename)
+                logger.info('Файл обновлен без изменений')
+                return self
+
+            self._save_xml(self.root, self.new_feeds_folder, new_filename)
+            logger.info('Файл сохранён как %s', new_filename)
+
+            self._is_modified = False
+            return self
+        except Exception as error:
+            logging.error(
+                'Неожиданная ошибка при сохранении файла %s: %s',
+                self.filename,
+                error
+            )
             raise
